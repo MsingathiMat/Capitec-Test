@@ -1,0 +1,72 @@
+// Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ------------------- Models -------------------
+
+model Customer {
+  customerId   String        @id
+  name         String
+  email        String        @unique
+  joinDate     String
+  accountType  String
+  currency     String        @default("ZAR")
+  transactions Transaction[]
+  goals        Goal[]
+}
+
+model Transaction {
+  id            String       @id
+  customerId    String
+  customer      Customer     @relation(fields: [customerId], references: [customerId])
+  date          DateTime
+  merchant      String
+  category      String
+  amount        Float
+  description   String
+  paymentMethod PaymentMethod
+
+  // Relation to CategoryMeta
+  categoryMeta  CategoryMeta @relation(fields: [category], references: [name])
+}
+
+model Goal {
+  id             String     @id
+  customerId     String
+  customer       Customer   @relation(fields: [customerId], references: [customerId])
+  category       String
+  monthlyBudget  Float
+  currentSpent   Float
+  percentageUsed Float
+  daysRemaining  Int
+  status         GoalStatus
+}
+
+model CategoryMeta {
+  name         String        @id
+  color        String
+  icon         String
+  transactions Transaction[] // back relation
+}
+
+// ------------------- Enums -------------------
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  DEBIT_ORDER
+}
+
+enum GoalStatus {
+  ON_TRACK
+  WARNING
+  OFF_TRACK
+}
